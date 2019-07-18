@@ -46,12 +46,18 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	glm::vec3 cameraRot = glm::vec3();
 	marcher::Camera camera = marcher::Camera(glm::vec3(0, 4, 6), glm::vec3(0, 0, 0));
 
 	marcher::Timer frameTimer, timer;
 	unsigned int TotalFrames = 0;
+	float totalTime = 0;
 
+	bool active = true;
 	while (window.isOpen()) {
+		float dt = timer.Restart<float>();
+		totalTime += dt;
+		
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
@@ -65,6 +71,12 @@ int main() {
 					mainShader = std::unique_ptr<marcher::Shader>(new marcher::Shader("main.vs", "main.fs"));
 				}
 			}
+			else if (event.type == sf::Event::LostFocus) {
+				active = false;
+			}
+			else if (event.type == sf::Event::GainedFocus) {
+				active = true;
+			}
 		}
 
 		TotalFrames++;
@@ -75,14 +87,54 @@ int main() {
 			TotalFrames = 0;
 		}
 
-		camera.Position.x = 5 * sin(timer.CurrentTime<float>() * 0.5f);
-		camera.Position.z = 5 * cos(timer.CurrentTime<float>() * 0.5f);
+		sf::Vector2i windowCenter = sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2);
+		if (sf::Mouse::getPosition(window) != windowCenter && active) {
+			cameraRot.y += ((float)sf::Mouse::getPosition(window).x - (float)windowCenter.x) / 1000;
+			cameraRot.x += ((float)sf::Mouse::getPosition(window).y - (float)windowCenter.y) / 1000;
+			sf::Mouse::setPosition(windowCenter, window);
+		}
+
+		auto camDir = glm::vec3(glm::vec4(0, 0, -1, 1) * glm::rotate(cameraRot.x, glm::vec3(1, 0, 0)) * glm::rotate(cameraRot.y, glm::vec3(0, 1, 0)));
+		auto camRight = glm::vec3(glm::vec4(1, 0, 0, 1) * glm::rotate(cameraRot.y, glm::vec3(0, 1, 0)));
+
+		float speed = 5.f;
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			speed = 20;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+			camera.Position += camDir * dt * speed;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+			camera.Position -= camDir * dt * speed;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+			camera.Position += camRight * dt * speed;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+			camera.Position -= camRight * dt * speed;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+			camera.Position += glm::vec3(0, 1, 0) * dt * speed;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+			camera.Position -= glm::vec3(0, 1, 0) * dt * speed;
+		}
+
+		camera.Target = camera.Position + camDir;
 
 		glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		camera.Update(mainShader, (float)window.getSize().x / (float)window.getSize().y, glm::vec4(0, 0, window.getSize().x, window.getSize().y));
 		mainShader->SendUniform("ScreenSize", glm::vec2(window.getSize().x, window.getSize().y));
+		mainShader->SendUniform("Time", totalTime);
 
 		mainShader->Bind();
 

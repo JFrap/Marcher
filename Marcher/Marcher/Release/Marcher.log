@@ -1,7 +1,7 @@
-﻿  Camera.cpp
+﻿  main.cpp
   Generating code
-  2 of 888 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  0 of 901 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Marcher.vcxproj -> C:\Users\James\source\Marcher\Release\Marcher.exe
+  Marcher.vcxproj -> C:\Users\James\Documents\GitHub\Marcher\Marcher\Release\Marcher.exe
