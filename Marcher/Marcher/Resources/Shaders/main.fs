@@ -2,10 +2,10 @@
 out vec4 FragColor;
 
 #define MAX_MARCHING_STEPS 512
-#define MAX_DISTANCE 500.f
+#define MAX_DISTANCE 50.f
 
 #define SHADOW_MAX_MARCHING_STEPS 128
-#define SHADOW_MAX_DISTANCE 20.f
+#define SHADOW_MAX_DISTANCE 50.f
 
 #define EPSILON 0.005f
 
@@ -22,6 +22,8 @@ uniform vec2 ScreenSize;
 uniform Camera MainCamera;
 uniform float Time;
 
+uniform sampler3D Model;
+
 Ray CalculateFragRay() {
     vec2 RelScreenPos = gl_FragCoord.xy / ScreenSize;
 
@@ -32,12 +34,7 @@ Ray CalculateFragRay() {
 }
 
 float sphereSDF(in vec3 rPos, in vec3 sPos) {
-    return distance(rPos, sPos) - 1;
-}
-
-float opSmoothSubtraction( float d1, float d2, float k ) {
-    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );
-    return mix( d2, -d1, h ) + k*h*(1.0-h); 
+    return distance(rPos, sPos) - 1.2;
 }
 
 vec3 SDFRepitition(in vec3 p, in vec3 c) {
@@ -45,13 +42,26 @@ vec3 SDFRepitition(in vec3 p, in vec3 c) {
     return q;
 }
 
-float SceneSDF(vec3 p) {
-    float dist = distance(p, vec3(0));
-    return min(sphereSDF(p, vec3(0,2,0)), p.y + sin(dist - Time*5) / dist);
+
+float opSmoothUnion(float d1, float d2, float k) {
+    float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
+    return mix( d2, d1, h ) - k*h*(1.0-h); 
+}
+
+float sdBox( vec3 p, vec3 bpos, vec3 b ) {
+  vec3 d = distance(abs(p), abs(bpos)) - b;
+  return length(max(d,0.0))
+         + min(max(d.x,max(d.y,d.z)),0.0); // remove this line for an only partially signed sdf 
+}
+
+float SceneSDF(in vec3 p) {
+    return min(texture(Model, p * vec3(1.f/2)).r, p.y);
+
+    //return min(sdBox(p, vec3(1)), sphereSDF(p, vec3(0)));
 }
 
 vec3 EstimateNormal(in vec3 p) {
-    const vec3 small_step = vec3(EPSILON, 0.0, 0.0);
+    const vec3 small_step = vec3(0.001, 0.0, 0.0);
 
     float gradient_x = SceneSDF(p + small_step.xyy) - SceneSDF(p - small_step.xyy);
     float gradient_y = SceneSDF(p + small_step.yxy) - SceneSDF(p - small_step.yxy);
@@ -75,6 +85,7 @@ MarchInfo March(in Ray ray) {
         dist = SceneSDF(ray.Origin + (ray.Direction * depth));
         minDist = min(dist, minDist);
         if (abs(dist) < EPSILON) {
+
             return MarchInfo(true, depth, dist, ray.Origin + (ray.Direction * depth), EstimateNormal(ray.Origin + (ray.Direction * depth)));
         }
         depth += dist;
@@ -88,13 +99,13 @@ MarchInfo March(in Ray ray) {
 float SoftShadow(in Ray ray, in float k) {
     float res = 1.0;
     float ph = 1e20;
-    for (float t=0; t<SHADOW_MAX_DISTANCE;) {
+    for(float t=EPSILON; t<SHADOW_MAX_DISTANCE;) {
         float h = SceneSDF(ray.Origin + ray.Direction*t);
-        if (h<EPSILON)
-            return 0.0;
+        if(h<EPSILON)
+            return 0;
         float y = h*h/(2.0*ph);
         float d = sqrt(h*h-y*y);
-        res = min( res, k*d/max(0.0,t-y) );
+        res = min(res, k*d/max(0.0,t-y));
         ph = h;
         t += h;
     }
@@ -105,11 +116,11 @@ vec3 Render(in Ray ray) {
     MarchInfo info = March(ray);
 
     if (info.Hit) {
-        float shadow = 1.f-SoftShadow(Ray(info.Position + info.Normal * (EPSILON*10), normalize(vec3(1))), 16);
+        float shadow = 1.f-SoftShadow(Ray(info.Position + info.Normal * EPSILON, normalize(vec3(1))), 8);
 
         float ret = max(dot(info.Normal, normalize(vec3(1))), 0.1f);
         ret -= shadow * (ret-0.1f);
-        return ret * vec3(1.f);
+        return mix(ret * vec3(1.f), vec3(0.5f), distance(ray.Origin, info.Position)/MAX_DISTANCE);
     }
     return vec3(0.5f);
 }
@@ -117,8 +128,5 @@ vec3 Render(in Ray ray) {
 void main() {
     Ray CamRay = CalculateFragRay();
 
-    if (SceneSDF(CamRay.Origin) > 0)
-        FragColor = vec4(Render(CamRay), 1.f);
-    else
-        FragColor = vec4(0.5,0.5,0.5,1);
+    FragColor = vec4(Render(CamRay), 1.f);
 }

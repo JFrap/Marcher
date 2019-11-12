@@ -1,18 +1,20 @@
-#include <SFML/Graphics.hpp>
+﻿#include <SFML/Graphics.hpp>
 #include <glad/glad.h>
 
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Timer.h"
+#include "Engine/Graphics/VolumetricModel.h"
 
 int main() {
 	sf::ContextSettings settings;
 	settings.depthBits = 24;
 	settings.stencilBits = 8;
-	settings.majorVersion = 3;
+	settings.majorVersion = 4;
 	settings.minorVersion = 3;
 
 	sf::Window window(sf::VideoMode(1280, 720), "Marcher", sf::Style::Default);
+	window.setVerticalSyncEnabled(true);
 
 	int gladInitRes = gladLoadGL();
 	if (!gladInitRes) {
@@ -20,6 +22,10 @@ int main() {
 		window.close();
 		return -1;
 	}
+
+	glEnable(GL_TEXTURE_3D);
+
+	printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
 
 	std::shared_ptr<marcher::Shader> mainShader = std::unique_ptr<marcher::Shader>(new marcher::Shader("main.vs", "main.fs"));
 
@@ -46,8 +52,10 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	marcher::VolumetricModel model("bunny.vol");
+
 	glm::vec3 cameraRot = glm::vec3();
-	marcher::Camera camera = marcher::Camera(glm::vec3(0, 4, 6), glm::vec3(0, 0, 0));
+	marcher::Camera camera = marcher::Camera(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0));
 
 	marcher::Timer frameTimer, timer;
 	unsigned int TotalFrames = 0;
@@ -82,7 +90,7 @@ int main() {
 		TotalFrames++;
 		float currentTime = frameTimer.CurrentTime<float>();
 		if (currentTime >= 1.f) {
-			printf("%f FPS | %f MS \n", (float)TotalFrames / currentTime, (currentTime / (float)TotalFrames) * 1000);
+			printf("%f FPS | %f MS \n", (float)TotalFrames / currentTime, (currentTime / (float)TotalFrames) * 1000.f);
 			frameTimer.Restart();
 			TotalFrames = 0;
 		}
@@ -99,32 +107,34 @@ int main() {
 
 		float speed = 5.f;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			speed = 20;
-		}
+		if (active) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+				speed = 20;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-			camera.Position += camDir * dt * speed;
-		}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+				camera.Position += camDir * dt * speed;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-			camera.Position -= camDir * dt * speed;
-		}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+				camera.Position -= camDir * dt * speed;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-			camera.Position += camRight * dt * speed;
-		}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+				camera.Position += camRight * dt * speed;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-			camera.Position -= camRight * dt * speed;
-		}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+				camera.Position -= camRight * dt * speed;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-			camera.Position += glm::vec3(0, 1, 0) * dt * speed;
-		}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+				camera.Position += glm::vec3(0, 1, 0) * dt * speed;
+			}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
-			camera.Position -= glm::vec3(0, 1, 0) * dt * speed;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+				camera.Position -= glm::vec3(0, 1, 0) * dt * speed;
+			}
 		}
 
 		camera.Target = camera.Position + camDir;
@@ -138,8 +148,13 @@ int main() {
 
 		mainShader->Bind();
 
+		model.Bind(0);
+		mainShader->SendUniform("Model", 0);
+
 		glBindVertexArray(VAO); 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindTexture(GL_TEXTURE_3D, 0);
 
 		window.display();
 	}
