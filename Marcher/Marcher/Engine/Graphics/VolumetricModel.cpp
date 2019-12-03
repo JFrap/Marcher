@@ -19,7 +19,7 @@ namespace marcher {
 				if (line != "") {					
 					float lval = stof(line);
 					distanceField.push_back(lval);
-					distanceField.push_back(lval);
+					//distanceField.push_back(lval);
 				}
 			}
 			file.close();
@@ -36,7 +36,7 @@ namespace marcher {
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_R16F, 2 / VOXELSIZE, 2 / VOXELSIZE, 2 / VOXELSIZE, 0, GL_RG, GL_FLOAT, &distanceField[0]);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_R16F, 2 / VOXELSIZE, 2 / VOXELSIZE, 2 / VOXELSIZE, 0, GL_RED, GL_FLOAT, &distanceField[0]);
 		glBindTexture(GL_TEXTURE_3D, 0);
 	}
 
