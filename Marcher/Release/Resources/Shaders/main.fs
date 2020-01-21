@@ -125,6 +125,7 @@ float sdBox( vec3 p, vec3 b ) {
          + min(max(d.x,max(d.y,d.z)),0.0); // remove this line for an only partially signed sdf 
 }
 
+/*
 float scene1(in vec3 p) {
     float s = 100000;
     if (sdBox(p - vec3(1), vec3(1)) <= EPSILON) {
@@ -133,7 +134,7 @@ float scene1(in vec3 p) {
     else {
         s =  min(sdBox(p - vec3(1), vec3(1)), p.y);
     }
-    float f = sphereSDF(SDFRepitition(p, vec3(6,0,6)), vec3(0,8+sin(Time + p.x)*cos(Time + p.z),0));
+    float f = sphereSDF(SDFRepitition(p, vec3(6,0,6)), vec3(0));
     if (f <= EPSILON) {
         //f = max(f, cnoise(p+vec3(Time)));
     }
@@ -147,18 +148,47 @@ float scene2(in vec3 p) {
     f = sphereSDF(p, vec3(0,2,0));
 
     if (f <= 1) {
-        f = sphereSDF(p, vec3(0,2,0)) + (cnoise(p + vec3(Time)) * 0.5 + 0.5) * 0.2;
+        f = sphereSDF(p, vec3(0,2,0)) + (cnoise(p + vec3(Time)) * 0.5 + 0.5) * 0.3;
     }
 
-    return opSmoothUnion(p.y - (sin(length(p.xz) + Time * 4) * 0.5 + 0.5) / max(length(p.xz), 1), f, 0.5f);
+    return opSmoothUnion(p.y - (sin(length(p.xz) + Time * 4) * 0.5 + 0.5) / max(length(p.xz), 1), f, 1);
 }
+*/
 
 float SceneSDF(in vec3 p) {
-    return scene2(p);
+    float s = 100000;
+    if (sdBox(p - vec3(1), vec3(1)) <= EPSILON) {
+        s = texture(Model, p * vec3(1.f/2)).r;
+    }
+    else {
+        s = sdBox(p - vec3(1), vec3(1));
+    }
+    float f = sphereSDF(SDFRepitition(p, vec3(6,0,6)), vec3(0));
+    if (f <= EPSILON) {
+        //f = max(f, cnoise(p+vec3(Time)));
+    }
+
+    return min(min(s, f), p.y);
+}
+
+float SceneSDFAO(in vec3 p) {
+    float s = 100000;
+    if (sdBox(p - vec3(1), vec3(1)) <= EPSILON) {
+        s = texture(Model, p * vec3(1.f/2)).r;
+    }
+    else if (sdBox(p - vec3(1), vec3(1)) <= 0.5) {
+        s = sdBox(p - vec3(1), vec3(1)) + texture(Model, p * vec3(1.f/2)).r;
+    }
+    float f = sphereSDF(SDFRepitition(p, vec3(6,0,6)), vec3(0));
+    if (f <= EPSILON) {
+        //f = max(f, cnoise(p+vec3(Time)));
+    }
+
+    return min(min(s, f), p.y);
 }
 
 vec3 EstimateNormal(in vec3 p) {
-    const vec3 small_step = vec3(EPSILON, 0.0, 0.0);
+    const vec3 small_step = vec3(0.03125, 0.0, 0.0);
 
     float gradient_x = SceneSDF(p + small_step.xyy) - SceneSDF(p - small_step.xyy);
     float gradient_y = SceneSDF(p + small_step.yxy) - SceneSDF(p - small_step.yxy);
@@ -173,24 +203,28 @@ struct MarchInfo {
     bool Hit;
     float Depth, MinDistance;
     vec3 Position, Normal;
+    int Steps;
 };
 
 MarchInfo March(in Ray ray) {
     float depth = 0.f;
     float dist, minDist = MAX_DISTANCE;
-    for (int i = 0; i < MAX_MARCHING_STEPS; i++) {
+    int i = 0;
+    for (; i < MAX_MARCHING_STEPS; i++) {
         dist = SceneSDF(ray.Origin + (ray.Direction * depth));
         minDist = min(dist, minDist);
-        if (abs(dist) < EPSILON) {
-
-            return MarchInfo(true, depth, dist, ray.Origin + (ray.Direction * depth), EstimateNormal(ray.Origin + (ray.Direction * depth)));
+        if (dist < EPSILON) {
+            if (dist < 0) {
+                depth += dist; depth += dist;
+            }
+            return MarchInfo(true, depth, dist, ray.Origin + (ray.Direction * depth), EstimateNormal(ray.Origin + (ray.Direction * depth)), i);
         }
         depth += dist;
         if (depth >= MAX_DISTANCE) {
-            return MarchInfo(false, depth, minDist, ray.Origin + (ray.Direction * depth), vec3(0));
+            return MarchInfo(false, depth, minDist, ray.Origin + (ray.Direction * depth), vec3(0), i);
         }
     }
-    return MarchInfo(false, depth, minDist, ray.Origin + (ray.Direction * depth), vec3(0));
+    return MarchInfo(false, depth, minDist, ray.Origin + (ray.Direction * depth), vec3(0), i);
 }
 
 float SoftShadow(in Ray ray, in float k) {
@@ -203,6 +237,23 @@ float SoftShadow(in Ray ray, in float k) {
     return 1;
 }
 
+float genAmbientOcclusion(vec3 ro, vec3 rd) {
+    vec4 totao = vec4(0.0);
+    float sca = 1.0;
+
+    for (int aoi = 0; aoi < 5; aoi++) {
+        float hr = 0.01 + 0.02 * float(aoi * aoi);
+        vec3 aopos = ro + rd * hr;
+        float dd = SceneSDFAO(aopos);
+        float ao = clamp(-(dd - hr), 0.0, 1.0);
+        totao += ao * sca * vec4(1.0, 1.0, 1.0, 1.0);
+        sca *= 0.75;
+    }
+
+    const float aoCoef = 1;
+    return 1.0 - clamp(aoCoef * totao.w, 0.0, 1.0);
+}
+
 vec3 bgColor = vec3(0.6, 0.6, 1);
 
 vec3 Render(in Ray ray) {
@@ -213,6 +264,7 @@ vec3 Render(in Ray ray) {
         
         float ret = max(dot(info.Normal, normalize(vec3(1))), 0.2f);
         ret -= shadow * (ret-0.2f);
+        ret *= genAmbientOcclusion(info.Position + info.Normal * EPSILON, info.Normal);
         return mix(ret * vec3(1.f), bgColor, distance(ray.Origin, info.Position)/MAX_DISTANCE);
     }
     return bgColor;
