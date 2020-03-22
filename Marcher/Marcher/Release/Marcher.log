@@ -1,17 +1,58 @@
-﻿  main.cpp
-C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\main.cpp(57,67): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(459,5): warning MSB8028: The intermediate directory (Release\) contains files shared from another project (Marcher.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Camera.cpp
+  Color.cpp
+  imgui-SFML.cpp
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\imgui-SFML.cpp(400,54): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
+          with
+          [
+              T=int
+          ]
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\imgui-SFML.cpp(400,42): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
+          with
+          [
+              T=int
+          ]
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_widgets.cpp
+  imgui_stdlib.cpp
+  TextEditor.cpp
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(87,28): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(462,16): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(495,25): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(500,11): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(513,12): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(532,12): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(543,12): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(1016,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(1628,37): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(1637,14): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(1639,37): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(1877,18): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(2267,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(2291,40): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(2345,49): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\ImGUI\TextEditor.cpp(2398,46): warning C4018: '<': signed/unsigned mismatch
+  main.cpp
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\main.cpp(73,67): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
           with
           [
               T=unsigned int
           ]
-C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\main.cpp(57,47): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\main.cpp(73,47): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
           with
           [
               T=unsigned int
           ]
+  Shader.cpp
+  VolumetricModel.cpp
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\Graphics\VolumetricModel.cpp(39,75): warning C4244: 'argument': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\Graphics\VolumetricModel.cpp(39,60): warning C4244: 'argument': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\James\Documents\GitHub\Marcher\Marcher\Marcher\Engine\Graphics\VolumetricModel.cpp(39,45): warning C4244: 'argument': conversion from 'float' to 'GLsizei', possible loss of data
+  glad.c
   Generating code
-  1 of 2177 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    23 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB not found, fall back to full compilation.
+  All 2403 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  Marcher.vcxproj -> C:\Users\James\Documents\GitHub\Marcher\Marcher\Release\Marcher.exe
+  Marcher.vcxproj -> C:\Users\James\Documents\GitHub\Marcher\Marcher\Release\Marchtool.exe

@@ -52,6 +52,22 @@ namespace marcher {
 		}
 	}
 
+	void Shader::AddShaderString(std::string shdr, ShaderType type, std::string path) {
+		m_shaders.push_back(glCreateShader(ShaderTypeToGL(type)));
+		auto str = shdr.c_str();
+		glShaderSource(m_shaders[m_shaders.size() - 1], 1, &str, nullptr);
+		glCompileShader(m_shaders[m_shaders.size() - 1]);
+
+		GLint success;
+		GLchar infoLog[1024];
+		glGetShaderiv(m_shaders[m_shaders.size() - 1], GL_COMPILE_STATUS, &success);
+		if (!success) {
+			glGetShaderInfoLog(m_shaders[m_shaders.size() - 1], 1024, nullptr, infoLog);
+
+			printf("Shader Error at %s\n%s", path.c_str(), infoLog);
+		}
+	}
+
 	void Shader::Compile() {
 		ProgramID = glCreateProgram();
 		for (size_t i = 0; i < m_shaders.size(); i++) {

@@ -23,6 +23,7 @@
     <ProjectGuid>{6700D50A-9325-44CF-B81D-2EC2FB5463A5}</ProjectGuid>
     <RootNamespace>Marcher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Marchtool</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -136,6 +137,7 @@
     <ClCompile Include="Engine\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="Engine\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Engine\ImGUI\imgui_stdlib.cpp" />
+    <ClCompile Include="Engine\ImGUI\TextEditor.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Engine\Graphics\Shader.cpp" />
@@ -157,6 +159,7 @@
     <ClInclude Include="Engine\ImGUI\imstb_truetype.h" />
     <ClInclude Include="Engine\ImGUI\imgui_stdlib.h" />
     <ClInclude Include="Engine\ImGUI\imgui_single_file.h" />
+    <ClInclude Include="Engine\ImGUI\TextEditor.h" />
     <ClInclude Include="Engine\Maths.h" />
     <ClInclude Include="Engine\Graphics\Shader.h" />
     <ClInclude Include="Engine\Timer.h" />

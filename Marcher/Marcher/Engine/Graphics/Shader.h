@@ -28,6 +28,7 @@ namespace marcher {
 
 		//AddShader() and Compile() are intended for if you intend to add each shader individually aswell as add a geometry shader
 		void AddShader(std::string path, ShaderType type);
+		void AddShaderString(std::string shdr, ShaderType type, std::string path = "Shader");
 		void Compile();
 		void Bind();
 
